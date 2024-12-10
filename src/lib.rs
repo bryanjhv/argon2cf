@@ -1,6 +1,6 @@
 use argon2::{
     password_hash::{rand_core::OsRng, Error, SaltString},
-    Argon2, PasswordHash, PasswordHasher, PasswordVerifier,
+    Algorithm, Argon2, Params, PasswordHash, PasswordHasher, PasswordVerifier, Version,
 };
 use worker::{Context, Env, Method, Request, Response};
 
@@ -16,7 +16,17 @@ async fn main(mut req: Request, _env: Env, _ctx: Context) -> worker::Result<Resp
     let Some(f_pass) = form.get_field("pass") else {
         return Response::error("missing-pass-field", 400);
     };
-    let argon2 = Argon2::default();
+    let mut argon2 = Argon2::default();
+    if let Some(f_conf) = form.get_field("conf") {
+        let cost: Vec<u32> = f_conf.split(',').filter_map(|s| s.parse().ok()).collect();
+        if cost.len() != 3 {
+            return Response::error("invalid-conf-field", 400);
+        }
+        let Ok(params) = Params::new(cost[0], cost[1], cost[2], None) else {
+            return Response::error("invalid-conf-params", 400);
+        };
+        argon2 = Argon2::new(Algorithm::default(), Version::default(), params);
+    }
     if let Some(f_hash) = form.get_field("hash") {
         let Ok(hash) = PasswordHash::new(f_hash.as_str()) else {
             return Response::error("invalid-hash-field", 400);
