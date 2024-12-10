@@ -1,8 +1,7 @@
 use argon2::{
-    password_hash::{Error, SaltString},
+    password_hash::{rand_core::OsRng, Error, SaltString},
     Argon2, PasswordHash, PasswordHasher, PasswordVerifier,
 };
-use rand_core::OsRng;
 use worker::{Context, Env, Method, Request, Response};
 
 #[worker::event(fetch)]
