@@ -15,3 +15,9 @@ console_error_panic_hook = "0.1.7"
 getrandom = { version = "0.2.15", features = ["js"] }
 rand_core = { version = "0.6.4", features = ["std"] }
 worker = "0.4.2"
+
+[profile.release]
+opt-level = "s"
+strip = true
+lto = true
+codegen-units = 1
